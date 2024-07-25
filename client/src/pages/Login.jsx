@@ -17,6 +17,7 @@ import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Swal from "sweetalert2";
 
 function Copyright(props) {
   return (
@@ -50,8 +51,19 @@ export default function SignInSide({ setNav, state, setState }) {
   const handleChangeUserInfo = (e) => {
     setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
   };
-
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    },
+  });
   const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission
     axios
       .post(`http://localhost:4000/customer/Login`, userInfo)
       .then(async (res) => {
@@ -61,25 +73,42 @@ export default function SignInSide({ setNav, state, setState }) {
           localStorage.setItem("user", JSON.stringify(res.data.loggedInUser));
           localStorage.setItem("Token", JSON.stringify(res.data.authToken));
           await navigate("/");
-          toast.success(res.data.message);
+          Toast.fire({
+            icon: "success",
+            title: res.data.message,
+          });
         } else {
-          toast.error(res.data.message);
+          if (res.data.errorType === "password") {
+            Toast.fire({
+              icon: "error",
+              title: res.data.message,
+            });
+          } else {
+            Toast.fire({
+              icon: "error",
+              title: res.data.message,
+            });
+          }
         }
       })
       .catch((error) => {
         console.log(error);
+        toast.error("An error occurred. Please try again.");
       });
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const Font = {
-    fontFamily: "Poppins",
+    fontFamily: "Sans serif",
     fontStyle: "normal",
-    fontWeight: "700",
+    fontWeight: "1000",
     fontSize: "20px",
     lineHeight: "21px",
-    color: "rgba(0, 0, 0, 0.7)",
+    color: "#3A244A",
+    [defaultTheme.breakpoints.down("sm")]: {
+      fontSize: "18px",
+    },
   };
 
   return (
@@ -99,6 +128,9 @@ export default function SignInSide({ setNav, state, setState }) {
               : t.palette.grey[900],
           backgroundSize: "cover",
           backgroundPosition: "center",
+          [defaultTheme.breakpoints.down("sm")]: {
+            display: "none",
+          },
         }}
       />
       <Grid
@@ -106,7 +138,6 @@ export default function SignInSide({ setNav, state, setState }) {
         xs={12}
         sm={8}
         md={5}
-        component={Paper}
         elevation={6}
         square
         sx={{
@@ -115,13 +146,24 @@ export default function SignInSide({ setNav, state, setState }) {
           justifyContent: "center",
           flexDirection: "column",
           padding: 3,
+          borderRadius: 3, // Rounded corners
           [defaultTheme.breakpoints.down("sm")]: {
             padding: 2,
+            justifyContent: "center",
           },
         }}
       >
-        <Box sx={{ width: "100%", maxWidth: 400 }}>
-          <Typography component="h1" variant="h5" sx={Font}>
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: 360, // Smaller max width
+            borderRadius: 2, // Additional rounded corners
+            p: 3, // Padding inside the form box
+            boxShadow: 3, // Elevation for the form box
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Typography component="h1" variant="h1" sx={Font}>
             Fill what we know!
           </Typography>
           <TextField
@@ -133,6 +175,7 @@ export default function SignInSide({ setNav, state, setState }) {
             label="Enter Email"
             name="email"
             autoComplete="email"
+            sx={{ mb: 2 }}
           />
           <TextField
             onChange={handleChangeUserInfo}
@@ -147,15 +190,13 @@ export default function SignInSide({ setNav, state, setState }) {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleClickShowPassword}
-                    edge="end"
-                  >
+                  <IconButton onClick={handleClickShowPassword} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
+            sx={{ mb: 2 }}
           />
 
           <Button
@@ -163,23 +204,42 @@ export default function SignInSide({ setNav, state, setState }) {
             fullWidth
             variant="contained"
             sx={{
-              mt: 3,
+              mt: 2,
               mb: 2,
               backgroundColor: "#3A244A",
               boxShadow: "5px 5px 250px #657E96",
               borderRadius: "10px",
               height: "50px",
+              "&:hover": {
+                backgroundColor: "#3A244A",
+                color: "#FFFFFF",
+              },
             }}
           >
-            Sign Up
+            Sign In
           </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link to="/login" variant="body2">
-                Already have an account? Sign In
-              </Link>
-            </Grid>
-          </Grid>
+          <Link to="/register">
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 2,
+                mb: 2,
+                color: "#3A244A",
+                backgroundColor: "#FFFFFF",
+                boxShadow: "5px 5px 250px #3A244A",
+                borderRadius: "10px",
+                border: "2px solid #3A244A",
+                height: "50px",
+                "&:hover": {
+                  backgroundColor: "#3A244A",
+                  color: "#FFFFFF",
+                },
+              }}
+            >
+              Sign Up
+            </Button>
+          </Link>
         </Box>
       </Grid>
     </Grid>

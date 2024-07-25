@@ -10,24 +10,27 @@ import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { toast } from "react-toastify";
-import img1 from "../Images/fig1.png";
+import img1 from "../Images/sign-up.jpg";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Swal from "sweetalert2";
 
 const defaultTheme = createTheme();
 
-export default function SignInSide({ setNav }) {
-  React.useEffect(() => {
-    setNav(false);
-  }, []);
-
+export default function SignInSide() {
   let navigate = useNavigate();
   const [userInfo, setUserInfo] = React.useState({
     name: "",
     phone: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [errors, setErrors] = React.useState({});
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   const handleChangeUserInfo = (e) => {
     setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
@@ -40,10 +43,24 @@ export default function SignInSide({ setNav }) {
     if (!userInfo.phone) newErrors.phone = "Phone number is required";
     if (!userInfo.email) newErrors.email = "Email is required";
     if (!userInfo.password) newErrors.password = "Password is required";
-    if (!userInfo.confirmPassword) newErrors.confirmPassword = "Re-entering the password is required";
-    if (userInfo.password !== userInfo.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    if (!userInfo.confirmPassword)
+      newErrors.confirmPassword = "Re-entering the password is required";
+    if (userInfo.password !== userInfo.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
     return newErrors;
   };
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    },
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,10 +74,19 @@ export default function SignInSide({ setNav }) {
       .post(`http://localhost:4000/customer/Register`, userInfo)
       .then((response) => {
         if (response.data.success) {
-          navigate("/login");
-          toast.success(response.data.message);
+          navigate("/");
+          Toast.fire({
+            icon: "success",
+            title: response.data.message,
+          });
+          // to
+          // toast.success(response.data.message);
         } else {
-          toast.error(response.data.message);
+          Toast.fire({
+            icon: "error",
+            title: response.data.message,
+          });
+          // toast.error(response.data.message);
         }
       })
       .catch((error) => {
@@ -68,6 +94,10 @@ export default function SignInSide({ setNav }) {
         toast.error("An error occurred. Please try again.");
       });
   };
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConfirmPassword = () =>
+    setShowConfirmPassword((show) => !show);
 
   const Font = {
     fontFamily: "Poppins",
@@ -165,10 +195,19 @@ export default function SignInSide({ setNav }) {
             id="password"
             label="Password"
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             error={!!errors.password}
             helperText={errors.password}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleClickShowPassword} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             onChange={handleChangeUserInfo}
@@ -178,10 +217,22 @@ export default function SignInSide({ setNav }) {
             id="confirmPassword"
             label="Re-enter Password"
             name="confirmPassword"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             autoComplete="new-password"
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleClickShowConfirmPassword}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             onClick={handleSubmit}
@@ -190,11 +241,14 @@ export default function SignInSide({ setNav }) {
             sx={{
               mt: 3,
               backgroundColor: "#3A244A",
-
               mb: 2,
               boxShadow: "5px 5px 250px #657E96",
               borderRadius: "10px",
               height: "50px",
+              "&:hover": {
+                backgroundColor: "#3A244A",
+                color: "#FFFFFF",
+              },
             }}
           >
             Register
