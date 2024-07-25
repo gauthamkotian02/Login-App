@@ -1,12 +1,11 @@
-import logo from "./logo.svg";
-import "./App.css";
-import Loader from "./components/Loader/Loader";
-import { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import Loader from "./components/Loader/Loader";
 import NotFound from "./pages/404";
+import Welcome from "./pages/Welcome";
+import Register from "./pages/Register"
 const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
 
 function App() {
   const [nav, setNav] = useState(true);
@@ -15,12 +14,10 @@ function App() {
   const [state, setState] = useState(true);
 
   useEffect(() => {
-    if (localStorage.getItem("Token") != null) {
-      setLoggedIn(JSON.parse(localStorage.getItem("Token")));
+    if (localStorage.getItem("Token")) {
+      setLoggedIn(true);
       setUser(JSON.parse(localStorage.getItem("user")));
       window.scrollTo(0, 0);
-      let customer = JSON.parse(localStorage.getItem("user"));
-      let customer_id = customer?._id;
     } else {
       setLoggedIn(false);
     }
@@ -30,17 +27,18 @@ function App() {
     <Suspense fallback={<Loader />}>
       <Router>
         <Routes>
-          {/* <Route path="/" element={<Home />} /> */}
+          <Route path="/" element={<Welcome />} />
           <Route
-            path="/"
+            path="/login"
             element={
               <Login state={state} setState={setState} setNav={setNav} />
             }
           />
-          <Route path="/register" element={<Register setNav={setNav} />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/*" element={<NotFound />} />
         </Routes>
       </Router>
+      <ToastContainer />
     </Suspense>
   );
 }
