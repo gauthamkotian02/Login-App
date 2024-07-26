@@ -71,7 +71,7 @@ export default function SignInSide() {
     }
 
     axios
-      .post(`http://localhost:4000/customer/Register`, userInfo)
+      .post(`http://localhost:4000/customer/register`, userInfo)
       .then((response) => {
         if (response.data.success) {
           navigate("/");

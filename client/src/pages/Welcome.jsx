@@ -39,18 +39,26 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function Welcome() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [Token, setToken] = useState("");
 
   useEffect(() => {
-    if (!localStorage.getItem("Token")) {
-        navigate("/login");
+    const tokenString = localStorage.getItem("Token");
+    if (!tokenString) {
+      navigate("/login");
     } else {
-      const token = JSON.parse(localStorage.getItem("Token"));
-      setToken(token);
+      try {
+        const token = JSON.parse(tokenString);
+        setToken(token);
+      } catch (error) {
+        console.error("Error parsing token:", error);
+        localStorage.removeItem("Token");
+        navigate("/login");
+      }
     }
   }, [navigate]);
+
   const Font = {
     fontFamily: "Sans serif",
     fontStyle: "normal",
