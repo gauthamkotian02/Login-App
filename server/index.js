@@ -10,9 +10,7 @@ const PORT = 4000;
 app.use("/customer", require("./Routes/customer_Routes"));
 
 //uploads
-app.use("/uploads/customer", express.static("./Uploads/customer"));
-
-
+// app.use("/uploads/customer", express.static("./Uploads/customer"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on the port ${PORT}`);
