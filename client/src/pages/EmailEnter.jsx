@@ -1,23 +1,16 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import { Link, useNavigate } from "react-router-dom";
-import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
-import img1 from "../Images/fig1.png";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Swal from "sweetalert2";
+import img1 from "../Images/fig1.png";
 
 function Copyright(props) {
   return (
@@ -39,18 +32,14 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-export default function SignInSide({ setNav, state, setState }) {
-  useEffect(() => {
-    setNav(false);
-  }, []);
+export default function EnterEmail({}) {
+  //   useEffect(() => {
+  //     setNav(false);
+  //   }, []);
 
   let navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
 
-  const handleChangeUserInfo = (e) => {
-    setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
-  };
   const Toast = Swal.mixin({
     toast: true,
     position: "top-end",
@@ -62,15 +51,17 @@ export default function SignInSide({ setNav, state, setState }) {
       toast.onmouseleave = Swal.resumeTimer;
     },
   });
+  const handleChangeUserInfo = (e) => {
+    setEmail({ ...email, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     axios
-      .post(`http://localhost:4000/customer/Login`, userInfo)
+      .post(`http://localhost:4000/customer/otp`, { email })
       .then(async (res) => {
         if (res.data.success) {
-          setNav(true);
-          setState(!state);
-          localStorage.setItem("user", JSON.stringify(res.data.loggedInUser));
+          localStorage.setItem("user", JSON.stringify(res.data.user));
           localStorage.setItem("Token", JSON.stringify(res.data.authToken));
           await navigate("/");
           Toast.fire({
@@ -78,26 +69,20 @@ export default function SignInSide({ setNav, state, setState }) {
             title: res.data.message,
           });
         } else {
-          if (res.data.errorType === "password") {
-            Toast.fire({
-              icon: "error",
-              title: res.data.message,
-            });
-          } else {
-            Toast.fire({
-              icon: "error",
-              title: res.data.message,
-            });
-          }
+          Toast.fire({
+            icon: "error",
+            title: res.data.message,
+          });
         }
       })
       .catch((error) => {
         console.log(error);
-        toast.error("An error occurred. Please try again.");
+        Toast.fire({
+          icon: "error",
+          title: "An error occurred. Please try again.",
+        });
       });
   };
-
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const Font = {
     fontFamily: "Sans serif",
@@ -146,7 +131,7 @@ export default function SignInSide({ setNav, state, setState }) {
           justifyContent: "center",
           flexDirection: "column",
           padding: 3,
-          borderRadius: 3, // Rounded corners
+          borderRadius: 3,
           [defaultTheme.breakpoints.down("sm")]: {
             padding: 2,
             justifyContent: "center",
@@ -156,15 +141,18 @@ export default function SignInSide({ setNav, state, setState }) {
         <Box
           sx={{
             width: "100%",
-            maxWidth: 360, // Smaller max width
-            borderRadius: 2, // Additional rounded corners
-            p: 3, // Padding inside the form box
-            boxShadow: 3, // Elevation for the form box
+            maxWidth: 360,
+            borderRadius: 2,
+            p: 3,
+            boxShadow: 3,
             backgroundColor: "#ffffff",
           }}
         >
           <Typography component="h1" variant="h1" sx={Font}>
-            Fill what we know!
+            Verify OTP
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Please enter the OTP sent to your email.
           </Typography>
           <TextField
             onChange={handleChangeUserInfo}
@@ -175,27 +163,6 @@ export default function SignInSide({ setNav, state, setState }) {
             label="Enter Email"
             name="email"
             autoComplete="email"
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            onChange={handleChangeUserInfo}
-            margin="normal"
-            required
-            fullWidth
-            id="password"
-            label="Set Password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={handleClickShowPassword} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
             sx={{ mb: 2 }}
           />
 
@@ -216,34 +183,12 @@ export default function SignInSide({ setNav, state, setState }) {
               },
             }}
           >
-            Sign In
+            Send OTP
           </Button>
-          <Link to="/register">
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                mt: 2,
-                mb: 2,
-                color: "#3A244A",
-                backgroundColor: "#FFFFFF",
-                boxShadow: "5px 5px 250px #3A244A",
-                borderRadius: "10px",
-                border: "2px solid #3A244A",
-                height: "50px",
-                "&:hover": {
-                  backgroundColor: "#3A244A",
-                  color: "#FFFFFF",
-                },
-              }}
-            >
-              Sign Up
-            </Button>
-          </Link>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link to="/otp" variant="body2">
-                Forgot Password
+              <Link to="/resend-otp" variant="body2">
+                Resend OTP
               </Link>
             </Grid>
           </Grid>
